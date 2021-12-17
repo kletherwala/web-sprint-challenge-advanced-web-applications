@@ -1,15 +1,64 @@
-import React from 'react';
+import React, {useState} from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
+import { useHistory } from 'react-router-dom';
 
-const Login = () => {
-    
-    return(<ComponentContainer>
-        <ModalContainer>
-            <h1>Welcome to Blogger Pro</h1>
-            <h2>Please enter your account information.</h2>
+const Login = (props) => {
+    const initialCredentials = {
+        username: '',
+        password: ''
+    }
+
+  const [credentials, setCredentials] = useState(initialCredentials)
+  const [error, setError] = useState('')
+  const {push} = useHistory()
+  
+    const handleChange = e => {
+      setCredentials({
+          ...credentials,
+          [e.target.name]: e.target.value
+      });
+    };
+  
+    const login = e => {
+      e.preventDefault();
+      axios.post("http://localhost:5000/api/login", credentials)
+        .then(resp => {
+          localStorage.setItem("token", resp.data.token);
+        push('/view');
+        })
+        .catch(err=> {
+        //   console.log(err.response.data);
+          setCredentials(initialCredentials)
+          setError(err.response.data.error)
+        })
+    };
+        return(<ComponentContainer>
+            <ModalContainer>
+                <h1>Welcome to Blogger Pro</h1>
+                <h2>Please enter your account information.</h2>
+                <div>
+            <form onSubmit={login}>
+            <input id='username'
+                type="text"
+                name="username"
+                value={credentials.username}
+                onChange={handleChange}
+            />
+            <input id='password'
+                type="password"
+                name="password"
+                value={credentials.password}
+                onChange={handleChange}
+            />
+            <button id='submit'>Log in</button>
+            </form>
+            <p id='error'>{error}</p>
+        </div>
+            
         </ModalContainer>
     </ComponentContainer>);
-}
+    }
 
 export default Login;
 
